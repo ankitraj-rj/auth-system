@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"], // Allowed values for the role user role
       default: "user", // bydefault value for user
     },
-    isVerified: String,
+    isVerified: { type: Boolean, default: false },
     passwordResetToken: String,
     passwordResetExpiry: String,
     verificationToken: String,
