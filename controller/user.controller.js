@@ -2,17 +2,17 @@ import User from "../models/User.model.js";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 
-const registerUser = async (req, res) => {
-  // Get Data From User
-  // validate
-  // check if user already exists
-  // create user in databse
-  // create a user in databse
-  // create a verification token
-  // save token in database
-  // send token as email to user
-  // send sucess status to user
+// Get Data From User
+// validate
+// check if user already exists
+// create user in databse
+// create a user in databse
+// create a verification token
+// save token in database
+// send token as email to user
+// send sucess status to user
 
+const registerUser = async (req, res) => {
   const { name, email, password } = req.body;
 
   if (!name || !email || !password) {
@@ -21,40 +21,33 @@ const registerUser = async (req, res) => {
     });
   }
 
-  const user = await User.create({
-    name,
-    email,
-    password,
-  });
-
-  console.log(user);
-
-  if (!user) {
-    return res.status(400).json({
-      message: "user not created",
-    });
-  }
-
   try {
-    const exitingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email });
 
-    if (exitingUser) {
+    if (existingUser) {
       return res.status(400).json({
-        message: "user already exist",
+        message: "User already exists",
+      });
+    }
+
+    const user = await User.create({ name, email, password });
+    console.log(user)
+
+    if (!user) {
+      return res.status(400).json({
+        message: "User not created",
       });
     }
 
     const token = crypto.randomBytes(32).toString("hex");
-    console.log(token);
     user.verificationToken = token;
+    console.log(`this is your token : ${token}`);
     await user.save();
-
-    //Send Mail
 
     const transporter = nodemailer.createTransport({
       host: process.env.MAILTRAP_HOST,
       port: process.env.MAILTRAP_PORT,
-      secure: false, // true for port 465, false for other ports
+      secure: false,
       auth: {
         user: process.env.MAILTRAP_USERNAME,
         pass: process.env.MAILTRAP_PASSWORD,
@@ -62,20 +55,26 @@ const registerUser = async (req, res) => {
     });
 
     const mailOptions = {
-      from: process.env.MAILTRAP_SENDEREMAIL, // sender address
-      to: User.email, // list of receivers
-      subject: "Verigy your mail id", // Subject line
-      text: `please click on url link: ${process.env.BASE_URL}/api/v1/users/verify/${token}`, // plain text body
-      html: "<b>Hello world?</b>", // html body
+      from: process.env.MAILTRAP_SENDEREMAIL,
+      to: user.email,
+      subject: "Verify your email ID",
+      text: `Please verify your email by clicking: ${process.env.BASE_URL}/api/v1/users/verify/${token}`,
+      html: `<p>Please click the following link to verify your email: <a href="${process.env.BASE_URL}/api/v1/users/verify/${token}">Verify Email</a></p>`,
     };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({
+      message: "User registered successfully. Please verify your email.",
+      success: true,
+    });
   } catch (error) {
-    
+    res.status(400).json({
+      message: "User not registered successfully",
+      success: false,
+      error,
+    });
   }
 };
 
-
-const loginUser = async (req, res) => {
-  res.send("loggedin Successfully");
-};
-
-export { registerUser, loginUser };
+export { registerUser };
