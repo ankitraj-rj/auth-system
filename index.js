@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import dbConnect from "./utils/db.connection.js";
+import cookieParser from "cookie-parser";
 
 // importing all router
 import userRoutes from "./routes/user.routes.js";
@@ -26,6 +27,7 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // db connection
 dbConnect();
