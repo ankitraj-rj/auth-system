@@ -18,6 +18,10 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+userSchema.pre("save",async function(next){
+  next()
+})
+
 const User = mongoose.model("user", userSchema);
 
 export default User;

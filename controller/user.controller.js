@@ -31,7 +31,7 @@ const registerUser = async (req, res) => {
     }
 
     const user = await User.create({ name, email, password });
-    console.log(user)
+    console.log(user);
 
     if (!user) {
       return res.status(400).json({
@@ -75,6 +75,40 @@ const registerUser = async (req, res) => {
       error,
     });
   }
+}; 
+
+const verifyUser = async (req, res) => {
+  // get token from url
+  // validate - token aaya ya nahi aaya
+  // find user based on token
+  // if user not present
+  // set isVerified filed to True
+  // remove verificationToken form databse
+  // save user
+  // return response
+
+  const { token } = req.params;
+  console.log(token);
+  if (!token) {
+    return res.status(400).json({
+      message: "verify Token not found",
+    });
+  }
+
+  const user = await User.findOne({ verificationToken: token });
+
+  if (!user) {
+    return res.status(400).json({
+      message: "user not found on this token",
+    });
+  }
+
+  user.isVerified = true;
+
+  user.verificationToken = undefined;
+
+  await user.save()
+
 };
 
-export { registerUser };
+export { registerUser, verifyUser };
