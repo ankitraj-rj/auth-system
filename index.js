@@ -29,13 +29,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// db connection
+// db connection.
 dbConnect();
 
 // user routes
 
 app.use("/api/v1/users", userRoutes);
 
-app.listen(port, () => {
+app.listen(process.env.PORT, () => {
   console.log(`Example app listening on port ${port}`);
 });
