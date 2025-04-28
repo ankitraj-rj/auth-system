@@ -50,6 +50,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: "Internal Server Error" });
 });
 
+console.log("Port is Running Here")
 
 // Start the server
 app.listen(port, () => {
