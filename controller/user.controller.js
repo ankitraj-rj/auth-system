@@ -4,18 +4,21 @@ import nodemailer from "nodemailer";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-// Register User
-// Get Data From User
-// validate
-// check if user already exists
-// create user in databse
-// create a user in databse
-// create a verification token
-// save token in database
-// send token as email to user
-// send sucess status to user
+
 
 const registerUser = async (req, res) => {
+
+  // Register User
+  // Get Data From User
+  // validate
+  // check if user already exists
+  // create user in databse
+  // create a user in databse
+  // create a verification token
+  // save token in database
+  // send token as email to user
+  // send sucess status to user
+
   const { name, email, password } = req.body;
 
   // Input validation
@@ -88,18 +91,17 @@ const registerUser = async (req, res) => {
   }
 };
 
-// Verify User
-
-// get token from url
-// validate - token aaya ya nahi aaya
-// find user based on token
-// if user not present
-// set isVerified filed to True
-// remove verificationToken form databse
-// save user
-// return response
-
 const verifyUser = async (req, res) => {
+
+  // get token from url
+  // validate - token aaya ya nahi aaya
+  // find user based on token
+  // if user not present
+  // set isVerified filed to True
+  // remove verificationToken form databse
+  // save user
+  // return response
+  
   const { token } = req.params;
 
   // Validate token
@@ -140,7 +142,6 @@ const verifyUser = async (req, res) => {
   }
 };
 
-// Login User
 const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -201,5 +202,38 @@ const login = async (req, res) => {
   }
 };
 
+const getMe = async (req,res) =>{
+  try {
+    
+  } catch (error) {
+    
+  }
+}
+
+const logoutUser = async (req,res) =>{
+  try {
+    
+  } catch (error) {
+    
+  }
+}
+
+const forgotPassword = async (req,res) =>{
+  try {
+    
+  } catch (error) {
+    
+  }
+}
+
+const resetPassword = async (req,res) =>{
+  try {
+    
+  } catch (error) {
+    
+  }
+}
+
+
+
 export { registerUser, verifyUser, login };
- 
