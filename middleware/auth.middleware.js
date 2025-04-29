@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 export const isLoggedIn = async (req, res, next) => {
   try {
     console.log(req.cookies);
-    // let token = req.cookies?.token
     let token = req.cookies.token || "";
 
     console.log("Token Found: ", token ? "YES" : "NO");
@@ -19,17 +18,18 @@ export const isLoggedIn = async (req, res, next) => {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      console.log("decoded data", decoded);
-      // decoded data is an object
+      console.log("Decoded data", decoded);
       req.user = decoded;
 
       next();
     } catch (error) {
-
+      console.log("Auth Middleware failure");
+      return res.status(500).json({
+        success: false,
+        message: "Internal Server Error",
+      });
     }
   } catch (error) {
-    next();
+    next(error);
   }
-  next();
 };
- 

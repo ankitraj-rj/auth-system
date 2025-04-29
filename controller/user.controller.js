@@ -4,8 +4,6 @@ import nodemailer from "nodemailer";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-
-
 const registerUser = async (req, res) => {
 
   // Register User
@@ -23,9 +21,7 @@ const registerUser = async (req, res) => {
 
   // Input validation
   if (!name || !email || !password) {
-    return res.status(400).json({
-      message: "All fields are required",
-    });
+    return res.status(400).json({ message: "All fields are required" });
   }
 
   try {
@@ -33,30 +29,24 @@ const registerUser = async (req, res) => {
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
-      return res.status(400).json({
-        message: "User already exists",
-      });
+      return res.status(400).json({ message: "User already exists" });
     }
 
-    // Hash password
+    // Create user
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create user in database
     const user = await User.create({ name, email, password: hashedPassword });
 
     if (!user) {
-      return res.status(400).json({
-        message: "User not created",
-      });
+      return res.status(400).json({ message: "User not created" });
     }
 
     // Create a verification token
     const token = crypto.randomBytes(32).toString("hex");
     user.verificationToken = token;
-    console.log(`this is your token : ${token}`);
+    console.log(`This is your token: ${token}`);
     await user.save();
 
-    // Send token as email to user
+    // Send email
     const transporter = nodemailer.createTransport({
       host: process.env.MAILTRAP_HOST,
       port: process.env.MAILTRAP_PORT,
@@ -77,22 +67,19 @@ const registerUser = async (req, res) => {
 
     await transporter.sendMail(mailOptions);
 
-    // Send success status to user
     res.status(200).json({
       message: "User registered successfully. Please verify your email.",
       success: true,
+      token,
     });
+    
   } catch (error) {
-    res.status(400).json({
-      message: "User not registered successfully",
-      success: false,
-      error,
-    });
+    res.status(400).json({ message: "Registration failed", error });
   }
 };
 
 const verifyUser = async (req, res) => {
-
+  // Verify User
   // get token from url
   // validate - token aaya ya nahi aaya
   // find user based on token
@@ -101,92 +88,73 @@ const verifyUser = async (req, res) => {
   // remove verificationToken form databse
   // save user
   // return response
-  
+
   const { token } = req.params;
 
-  // Validate token
   if (!token) {
-    return res.status(400).json({
-      message: "Verify token not found",
-    });
+    return res.status(400).json({ message: "Verify token not found" });
   }
 
   try {
-    // Find user based on token
     const user = await User.findOne({ verificationToken: token });
 
     if (!user) {
-      return res.status(400).json({
-        message: "User not found on this token",
-      });
+      return res
+        .status(400)
+        .json({ message: "User not found with this token" });
     }
 
-    // Set isVerified to true
     user.isVerified = true;
     user.verificationToken = undefined;
-
-    // Save user
     await user.save();
 
-    // Return response
-    res.status(200).json({
-      message: "User verified successfully",
-      success: true,
-    });
+    res
+      .status(200)
+      .json({ message: "User verified successfully", success: true });
   } catch (error) {
-    res.status(400).json({
-      message: "Verification failed",
-      success: false,
-      error,
-    });
+    res
+      .status(400)
+      .json({ message: "Verification failed", success: false, error });
   }
 };
 
 const login = async (req, res) => {
   const { email, password } = req.body;
 
-  // Validate fields
   if (!email || !password) {
-    return res.status(400).json({
-      message: "Login error: All fields are required",
-    });
+    return res.status(400).json({ message: "All fields are required" });
   }
 
   try {
-    // Find user by email
     const user = await User.findOne({ email });
 
-    if (!user) {
-      return res.status(400).json({
-        message: "Login error: Invalid email or password",
-      });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({
-        message: "Login error: Invalid email or password",
-      });
+    if (!user.isVerified) {
+      return res
+        .status(400)
+        .json({ message: "Please verify your email first" });
     }
 
-    const token = jwt.sign({ id: user._id, role: role }, "shhhhh", {
-      expiresIn: "24h",
-    });
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
 
     const cookieOptions = {
       httpOnly: true,
-      secure: true,
+      secure: false, // Should be true in production
       maxAge: 24 * 60 * 60 * 1000,
     };
 
     res.cookie("token", token, cookieOptions);
 
-    // Send success response
     res.status(200).json({
       message: "Login successful",
       success: true,
-      token,
       user: {
         id: user._id,
         name: user.name,
@@ -194,46 +162,73 @@ const login = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(400).json({
-      message: "Login failed",
-      success: false,
-      error,
-    });
+    res.status(400).json({ message: "Login failed", error });
   }
 };
 
-const getMe = async (req,res) =>{
+const getMe = async (req, res) => {
   try {
-    
+    console.log("Reached Profile Route");
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, user });
   } catch (error) {
-    
+    res.status(400).json({ message: "Error fetching user profile", error });
   }
-}
+};
 
 const logoutUser = async (req,res) =>{
   try {
-    
+    res.cookie('token','',{}) // pass cookie options here
+
+    res.status(200).json({
+      success:true,
+      message:"Logged out successfullyƒ"
+    })
   } catch (error) {
     
   }
 }
 
-const forgotPassword = async (req,res) =>{
+const forgotPassword = async ( req,res) =>{
   try {
-    
+    // get email
+    //find user based on email 
+    // reset token + rest expiry => Date.now() + 10*60*1000 => user.save
+    //send email => design url 
   } catch (error) {
     
   }
 }
 
-const resetPassword = async (req,res) =>{
+const restPassword = async (req,res) =>{
   try {
+    // collect token from params 
+    // password from req.body
     
+    const {token} = req.params
+    const {password} = req.body
+
+    try{
+      const user = await User.findOne({
+        passwordResetToken:token,
+        passwordResetExpiry:{$gt: Date.now()}
+      })
+
+      // set password in user 
+      // reset token , resetExpiry => rest 
+      // save 
+    } catch(error){
+
+    }
+
   } catch (error) {
     
   }
 }
 
-  
-
-export { registerUser, verifyUser, login , getMe };
+export { registerUser, verifyUser, login, getMe,logoutUser };
