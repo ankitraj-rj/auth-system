@@ -1,3 +1,4 @@
+
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
@@ -19,7 +20,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["user", "admin"], // Allowed values for role
+      enum: ["user", "admin"],
       default: "user",
     },
     isVerified: {
@@ -48,7 +49,6 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-// Create model
 const User = mongoose.model("User", userSchema);
 
 export default User;

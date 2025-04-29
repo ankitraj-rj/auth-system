@@ -187,10 +187,10 @@ const logoutUser = async (req,res) =>{
 
     res.status(200).json({
       success:true,
-      message:"Logged out successfullyƒ"
+      message:"Logged out successfully"
     })
   } catch (error) {
-    
+    res.status(500).json({ message: "Logout failed", error });
   }
 }
 
@@ -201,7 +201,7 @@ const forgotPassword = async ( req,res) =>{
     // reset token + rest expiry => Date.now() + 10*60*1000 => user.save
     //send email => design url 
   } catch (error) {
-    
+    res.status(500).json({ message: "Error in forgot password", error });
   }
 }
 
@@ -209,7 +209,7 @@ const restPassword = async (req,res) =>{
   try {
     // collect token from params 
     // password from req.body
-    
+
     const {token} = req.params
     const {password} = req.body
 
@@ -223,12 +223,12 @@ const restPassword = async (req,res) =>{
       // reset token , resetExpiry => rest 
       // save 
     } catch(error){
-
+      res.status(400).json({ message: "Invalid or expired token", error });
     }
 
   } catch (error) {
-    
+    res.status(500).json({ message: "Reset password failed", error });
   }
 }
 
-export { registerUser, verifyUser, login, getMe,logoutUser };
+export { registerUser, verifyUser, login, getMe, logoutUser };

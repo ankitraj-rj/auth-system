@@ -4,7 +4,7 @@ import {
   verifyUser,
   login,
   getMe,
-  logut,
+  logoutUser,
 } from "../controller/user.controller.js";
 import { isLoggedIn } from "../middleware/auth.middleware.js";
 
@@ -22,7 +22,7 @@ router.post("/login", login);
 // Protected route to get user profile
 router.post("/me", isLoggedIn, getMe);
 
-
-router.post("/logout", logut);
+// Logout route
+router.post("/logout", logoutUser);
 
 export default router;
